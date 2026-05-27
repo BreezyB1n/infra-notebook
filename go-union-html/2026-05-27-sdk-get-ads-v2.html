@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>go-union 每日模块讲解：SDK get_ads v2 主链路</title>
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --paper: #fffdf8;
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --line: #e6dcc9;
+      --brand: #c96b2c;
+      --brand-deep: #8f4519;
+      --accent: #0f766e;
+      --soft: #fff1dd;
+      --soft-green: #e8f7f4;
+      --soft-blue: #edf6ff;
+      --shadow: 0 18px 40px rgba(76, 52, 30, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffe7c2 0, transparent 28%),
+        radial-gradient(circle at top right, #d9f2ee 0, transparent 22%),
+        linear-gradient(180deg, #f7f3eb 0%, #efe7d8 100%);
+      line-height: 1.65;
+    }
+
+    .page {
+      width: min(1160px, calc(100vw - 32px));
+      margin: 24px auto 40px;
+      background: var(--paper);
+      border: 1px solid rgba(143, 69, 25, 0.12);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 40px 44px 28px;
+      background:
+        linear-gradient(135deg, rgba(201, 107, 44, 0.14), rgba(15, 118, 110, 0.08)),
+        linear-gradient(180deg, #fff8ee 0%, #fffdf8 100%);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #fff3df;
+      color: var(--brand-deep);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    h1, h2, h3 { margin: 0; }
+    h1 {
+      margin-top: 14px;
+      font-size: 38px;
+      line-height: 1.15;
+    }
+    .hero p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 880px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .meta-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(143,69,25,0.10);
+    }
+    .meta-card .label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .meta-card .value {
+      margin-top: 6px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .section {
+      padding: 30px 44px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child { border-bottom: none; }
+    .section-title {
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+    .lead {
+      color: var(--muted);
+      margin: 0 0 18px;
+    }
+
+    .callout {
+      padding: 18px 20px;
+      border-radius: 20px;
+      background: var(--soft);
+      border-left: 5px solid var(--brand);
+      margin: 14px 0 4px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 18px 18px 16px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fffdfa;
+    }
+    .card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .card p { margin: 0; color: var(--muted); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: white;
+    }
+    th, td {
+      padding: 14px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      background: #fbf5ea;
+      font-size: 14px;
+    }
+    tr:last-child td { border-bottom: none; }
+    code {
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: #f7efe4;
+      font-size: 0.92em;
+    }
+
+    .flow {
+      display: grid;
+      gap: 14px;
+    }
+    .flow-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .flow-stage {
+      padding: 16px;
+      border-radius: 18px;
+      color: white;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+    }
+    .flow-detail {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: var(--soft-blue);
+      border: 1px solid #d8e8fb;
+    }
+    .stepline {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: white;
+      border: 1px dashed #c8d9f2;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .example {
+      padding: 20px;
+      border-radius: 20px;
+      background: var(--soft-green);
+      border: 1px solid #cfeae4;
+    }
+    .example ol {
+      margin: 10px 0 0 20px;
+      padding: 0;
+    }
+    .example li { margin: 8px 0; }
+
+    .confusion-list {
+      display: grid;
+      gap: 14px;
+    }
+    .confusion {
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .confusion strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--brand-deep);
+    }
+
+    .footer-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+
+    @media (max-width: 760px) {
+      .page { width: min(100vw - 14px, 100%); margin: 8px auto 20px; border-radius: 18px; }
+      .hero, .section { padding: 22px 18px; }
+      h1 { font-size: 30px; }
+      .flow-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">go-union 每日模块讲解 · 第 1 期</div>
+      <h1>SDK get_ads v2 主链路</h1>
+      <p>
+        这是第一次读 <code>go-union</code> 时最值得抓住的一条线。因为它同时覆盖了
+        “路由入口怎么进来、服务怎么组装、请求怎么变成内部对象、上下文怎么补齐、engine 和 pack 怎么串起来、最后怎么返回客户端”。
+        如果这条链路读顺了，后面再看 DSP、内容联盟、server bidding，会轻松很多。
+      </p>
+      <div class="meta">
+        <div class="meta-card">
+          <div class="label">学习主题</div>
+          <div class="value">入口到响应的完整 get_ads 链路</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">推荐读者</div>
+          <div class="value">第一次接触 go-union 的同学</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">核心关键词</div>
+          <div class="value">ProtocolMapping / FlowContext / Engine / Pack</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">1. 模块作用</h2>
+      <p class="lead">
+        可以把这条链路想成一个“广告请求装配流水线”。
+      </p>
+      <div class="callout">
+        客户端调用 <code>/api/ad/union/sdk/get_ads/</code> 后，系统并不是直接去拿广告，而是先把外部请求整理成内部统一格式，再补全上下文，再调用广告引擎，再把候选广告打包成客户端真正能展示的素材。
+      </div>
+      <div class="grid-2" style="margin-top: 16px;">
+        <div class="card">
+          <h3>它解决什么问题？</h3>
+          <p>外部 SDK 请求格式不稳定、字段很多、逻辑分支复杂，不能直接拿去调用 engine。v2 链路把“杂乱输入”整理成“稳定内部流程”。</p>
+        </div>
+        <div class="card">
+          <h3>为什么它适合入门？</h3>
+          <p>因为它是很多场景复用的母体。你读懂它，就能理解 go-union 不只是一个 HTTP handler，而是一套阶段化广告处理框架。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">2. 关键文件</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>文件</th>
+            <th>职责</th>
+            <th>读这个文件时要看什么</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>main.go</code></td>
+            <td>注册路由，决定请求从哪个 handler 进入</td>
+            <td>确认 <code>/api/ad/union/sdk/get_ads/</code> 绑定到 <code>view.GetAdsV2Sdk</code></td>
+          </tr>
+          <tr>
+            <td><code>view/v2_get_ads.go</code></td>
+            <td>初始化 v2 服务，把各阶段组件组装成 <code>GetAdsService</code></td>
+            <td>看 builder 注入了哪些组件，以及 SDK 场景和其他场景的差异</td>
+          </tr>
+          <tr>
+            <td><code>v2/adfetch/ad_fetch.go</code></td>
+            <td>主流程骨架</td>
+            <td>重点看 <code>GetUnionAds</code> 里的 step 链</td>
+          </tr>
+          <tr>
+            <td><code>v2/adfetch/protocol_mapping/sdk/sdk_protocol.go</code></td>
+            <td>把 SDK 请求转成内部 <code>BidRequestWithProtocolHeader</code></td>
+            <td>看 <code>read_body → decipher → format → convert_pb → construct</code></td>
+          </tr>
+          <tr>
+            <td><code>v2/adfetch/build_context/build_context.go</code></td>
+            <td>构建 <code>FlowContext</code></td>
+            <td>看 DAG 如何补齐上下文，以及为什么还要 <code>RewriteFlowContext</code></td>
+          </tr>
+          <tr>
+            <td><code>v2/adfetch/entity/flowcontext.go</code></td>
+            <td>定义主上下文对象</td>
+            <td>理解为什么它像一个“请求生命周期大背包”</td>
+          </tr>
+          <tr>
+            <td><code>v2/adfetch/entity/pack_result.go</code></td>
+            <td>定义 pack 后的素材结构</td>
+            <td>理解客户端最终收到的 Creative 是怎么挂在这里的</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">3. 核心流程</h2>
+      <p class="lead">
+        主流程虽然很长，但第一次学习时可以先切成 4 段。
+      </p>
+      <div class="flow">
+        <div class="flow-row">
+          <div class="flow-stage">A. 入口分发</div>
+          <div class="flow-detail">
+            <strong>路由把请求送到哪？</strong><br />
+            <code>main.go</code> 把 <code>/api/ad/union/sdk/get_ads/</code> 注册到 <code>view.GetAdsV2Sdk</code>。
+            这个 handler 先做单机流控，再调用 <code>v2GetAdsService.GetUnionAds</code>。
+            <div class="stepline">Route → GetAdsV2Sdk → limiter.Allow() → v2GetAdsService.GetUnionAds</div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">B. 请求整理</div>
+          <div class="flow-detail">
+            <strong>外部请求先变成内部统一请求。</strong><br />
+            SDK 协议映射会读 body、解密、格式化、转成 protobuf，再构造
+            <code>BidRequestWithProtocolHeader</code>。这一步还会生成服务端 request id，
+            并把 header、path、客户端 IP、access method 等信息一起塞进去。
+            <div class="stepline">protocol_mapping → sample_log → flow_check → light_drop</div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">C. 生产广告</div>
+          <div class="flow-detail">
+            <strong>先补齐上下文，再去 engine 拿候选。</strong><br />
+            <code>build_flow_context</code> 会用 DAG 生成 <code>FlowContext</code>；
+            然后 <code>ad_engine</code> 去拿候选广告；随后 <code>pack</code> 把候选广告变成可以展示的素材。
+            <div class="stepline">build_flow_context → context_drop → ad_engine → handle_async_pack → pack</div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">D. 返回与副作用</div>
+          <div class="flow-detail">
+            <strong>返回给客户端只是表面，后面还有日志、ack、指标。</strong><br />
+            <code>write_out</code> 把打包结果映射成 SDK 响应；
+            <code>async</code> 里还有异步日志、ack、样本、超时指标等收尾动作。
+            <div class="stepline">search_lu_debug_and_cut → write_out → async</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">4. 重要结构体 / 函数</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3><code>GetAdsService</code></h3>
+          <p>
+            它不是“一个函数”，而是一组阶段组件的容器。里面挂着
+            <code>ProtocolMapping</code>、<code>FlowCheck</code>、<code>FlowContextBuilder</code>、
+            <code>Engine</code>、<code>Packer</code>、<code>Sender</code>、<code>Acker</code> 等接口。
+            所以它本质上是“广告链路编排器”。
+          </p>
+        </div>
+        <div class="card">
+          <h3><code>GetAdsServiceBuilder</code></h3>
+          <p>
+            它负责组装阶段组件。SDK 场景走 <code>NewDefaultSdkFlowChecker</code> 和
+            <code>NewSdkLightWeightDrop</code>，说明不同流量场景能复用骨架，但替换局部实现。
+          </p>
+        </div>
+        <div class="card">
+          <h3><code>BidRequestWithProtocolHeader</code></h3>
+          <p>
+            它是“整理后的标准请求”。除了原始 <code>BidRequest</code>，还带着 header、URL、客户端 IP、
+            access method、request type、server request id 等运行时信息。
+          </p>
+        </div>
+        <div class="card">
+          <h3><code>FlowContext</code></h3>
+          <p>
+            这是整条链路的核心上下文。你可以把它理解成“请求在系统内部活着时的总状态对象”。
+            从设备、用户、点位、实验、地理、engine、pack，到 ack 需要的信息，都会逐步塞进来。
+          </p>
+        </div>
+        <div class="card">
+          <h3><code>SdkProtocolMapping.MappingToBidRequest</code></h3>
+          <p>
+            这是外部世界进入内部世界的门。它做的不是简单反序列化，而是“解密 + 清洗 + 规范化 + 构造标准对象”。
+          </p>
+        </div>
+        <div class="card">
+          <h3><code>AdnContextGraph.BuildFlowContext</code></h3>
+          <p>
+            这里的重点是 DAG。说明上下文补齐不是一条简单顺序函数，而是一个可以管理依赖关系的图。
+            这也是 v2 链路工程化程度比较高的地方。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">5. 一个具体例子</h2>
+      <div class="example">
+        <strong>假设客户端发来一个普通 SDK 拉广告请求：</strong>
+        <ol>
+          <li>请求打到 <code>/api/ad/union/sdk/get_ads/</code>。</li>
+          <li><code>GetAdsV2Sdk</code> 先过限流，没超就进入 <code>GetUnionAds</code>。</li>
+          <li><code>protocol_mapping</code> 把加密 body 解开，转成 <code>pbgen.BidRequest</code>，再包装成 <code>BidRequestWithProtocolHeader</code>。</li>
+          <li><code>flow_check</code> 检查 app、rit、请求合法性；<code>light_drop</code> 做轻量过滤。</li>
+          <li><code>build_flow_context</code> 通过 DAG 把设备、实验、位置、投放上下文补齐，形成 <code>FlowContext</code>。</li>
+          <li><code>ad_engine</code> 去广告引擎取候选广告，得到 <code>FlowContextWithAdsList</code>。</li>
+          <li><code>pack</code> 把候选广告转成素材，得到 <code>FlowContextWithAdMaterial</code>，里面的 <code>AdMaterialist</code> 就是最终可返回的广告素材列表。</li>
+          <li><code>write_out</code> 把素材抽成 SDK 响应 JSON / protobuf 结构，客户端拿到 creatives。</li>
+          <li><code>async</code> 再补做 ack、日志、指标等异步工作。</li>
+        </ol>
+      </div>
+      <p class="footer-note">
+        这个例子最关键的收获不是“有哪些函数”，而是明白对象在不断升级：
+        <code>原始 body → BidRequest → BidRequestWithProtocolHeader → BidRequestWithRitInfo → FlowContext → FlowContextWithAdsList → FlowContextWithAdMaterial</code>。
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">6. 容易混淆的点</h2>
+      <div class="confusion-list">
+        <div class="confusion">
+          <strong>混淆点 1：<code>GetAdsV2Sdk</code> 不是主逻辑，它只是入口。</strong>
+          真正的大部分业务逻辑都在 <code>GetAdsService.GetUnionAds</code> 里。入口层负责接住请求、做一点前置控制，然后把请求交给服务骨架。
+        </div>
+        <div class="confusion">
+          <strong>混淆点 2：<code>ProtocolMapping</code> 不只是“解析 JSON”。</strong>
+          它还负责解密、字段格式化、服务端 request id 生成、环境信息拼装，所以它更像“协议适配器”，不是普通反序列化器。
+        </div>
+        <div class="confusion">
+          <strong>混淆点 3：<code>FlowContext</code> 和 <code>BidRequest</code> 不是一回事。</strong>
+          <code>BidRequest</code> 更像客户端原始请求；
+          <code>FlowContext</code> 则是内部处理态，里面已经塞进了大量派生信息和中间结果。
+        </div>
+        <div class="confusion">
+          <strong>混淆点 4：<code>pack</code> 不是“可有可无的美化步骤”。</strong>
+          engine 给的是候选广告信息，客户端最终需要的是可展示素材。pack 是把“候选广告”变成“能展示 Creative”的关键步骤。
+        </div>
+        <div class="confusion">
+          <strong>混淆点 5：链路返回成功，不代表工作已经结束。</strong>
+          <code>write_out</code> 后面还有 <code>async</code>。很多样本、ack、日志、统计指标都在这里补齐，所以读链路时不要只盯着“返回响应”。
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">7. 学习小结</h2>
+      <div class="callout">
+        第一次学习 <code>go-union</code>，最应该建立的认知是：
+        <strong>它不是一个“写死在 handler 里的广告接口”，而是一套可组装、可替换阶段组件的广告请求流水线框架。</strong>
+      </div>
+      <div class="grid-2" style="margin-top: 16px;">
+        <div class="card">
+          <h3>今天至少要带走的 3 个结论</h3>
+          <p>
+            1. <code>view</code> 层负责分诊和组装，不是全部业务本体。<br />
+            2. <code>GetAdsService</code> 是骨架，真正靠接口组件拼出不同场景。<br />
+            3. 主链路的对象是在逐步升级的，不是一开始就拿到最终广告。
+          </p>
+        </div>
+        <div class="card">
+          <h3>下一步推荐怎么继续学</h3>
+          <p>
+            下一次最自然的延伸是挑一段深入：
+            要么继续看 <code>engine.NewDefaultUnionEngineService()</code> 怎么请求广告引擎，
+            要么看 <code>pack.NewDefaultPackHandler()</code> 怎么把候选广告变成最终素材。
+          </p>
+        </div>
+      </div>
+      <p class="footer-note">
+        本页基于代码阅读整理，重点参考了 <code>main.go</code>、<code>view/v2_get_ads.go</code>、
+        <code>v2/adfetch/ad_fetch.go</code>、<code>v2/adfetch/protocol_mapping/sdk/sdk_protocol.go</code>、
+        <code>v2/adfetch/build_context/build_context.go</code>、<code>v2/adfetch/entity/flowcontext.go</code>。
+      </p>
+    </section>
+  </main>
+</body>
+</html>
