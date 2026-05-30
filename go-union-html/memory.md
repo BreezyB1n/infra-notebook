@@ -12,3 +12,5 @@
   - `v2/adfetch/build_context/graph/dag_plan_debug.go`
   - `v2/adfetch/build_context/graph/dag_test.go`
 - Run summary: wrote a standalone HTML lesson focused on DAG scheduling, dependency counters, timeout recovery, and the real `BuildFlowContext` integration point. Recorded at 2026-05-30 12:05:27 CST.
+- Publish summary: synced automation files into `/Users/bytedance/dev/infra/infra-notebook/go-union-html/`, committed only that directory on `main`, and pushed commit `dbfcbe0` to `origin/main`.
+- Publish runtime: ~00:04
