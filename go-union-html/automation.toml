@@ -1,0 +1,13 @@
+version = 1
+id = "go-union-html"
+kind = "cron"
+name = "go-union 每日模块 HTML 讲解"
+prompt = "每天从 /Users/bytedance/dev/go-union 中选择一个适合学习的模块或代码链路，先阅读相关代码，再用通俗易懂的方式讲解其中的知识点。输出一个生动、结构清晰的 HTML 讲解页面内容，包含模块作用、关键文件、核心流程、重要结构体/函数、一个具体例子、容易混淆的点和学习小结。HTML 应该适合直接阅读，使用标题、表格、流程图样式块或分区来增强可观察性。"
+status = "ACTIVE"
+rrule = "FREQ=DAILY;BYHOUR=9;BYMINUTE=0;BYSECOND=0"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+execution_environment = "local"
+cwds = ["/Users/bytedance/dev/go-union"]
+created_at = 1779806153382
+updated_at = 1780115784054

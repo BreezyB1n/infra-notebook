@@ -1,6 +1,14 @@
 # go-union-html automation memory
 
-- 2026-05-27: First run. Chose the `SDK get_ads v2` main request chain as the opening topic because it covers route entry, service assembly, protocol mapping, context building, engine, pack, and response output in one pass.
-- Output file: `/Users/bytedance/.codex/automations/go-union-html/2026-05-27-sdk-get-ads-v2.html`
-- Next good follow-up topics: `v2/adfetch/engine`, `v2/adfetch/pack`, `dsp_v2_get_ads`, or `content pack/get_ads split`.
-- Runtime: ~00:10
+## 2026-05-30
+
+- Topic: `v2/adfetch/build_context/graph`
+- Output: `2026-05-30-build-context-graph.html`
+- Why chosen: module is compact, central to `BuildFlowContext`, and good for explaining DAG scheduling, dependency triggering, and timeout fallback.
+- Key anchors:
+  - `v2/adfetch/build_context/build_context.go`
+  - `v2/adfetch/build_context/graph/interface.go`
+  - `v2/adfetch/build_context/graph/dag.go`
+  - `v2/adfetch/build_context/graph/dag_plan_debug.go`
+  - `v2/adfetch/build_context/graph/dag_test.go`
+- Run summary: wrote a standalone HTML lesson focused on DAG scheduling, dependency counters, timeout recovery, and the real `BuildFlowContext` integration point. Recorded at 2026-05-30 12:05:27 CST.

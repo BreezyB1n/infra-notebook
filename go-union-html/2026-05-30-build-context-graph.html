@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>go-union DAG Context Graph 学习页</title>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --panel: rgba(255, 252, 246, 0.92);
+      --ink: #1f2933;
+      --muted: #52606d;
+      --line: #d7c7a7;
+      --accent: #0f766e;
+      --accent-2: #c2410c;
+      --accent-3: #234e70;
+      --soft: #fff4d6;
+      --soft-2: #e6fffb;
+      --soft-3: #eef6ff;
+      --shadow: 0 18px 48px rgba(68, 52, 22, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 26%),
+        radial-gradient(circle at top right, rgba(194, 65, 12, 0.12), transparent 24%),
+        linear-gradient(180deg, #f8f2e8 0%, #f3eadb 100%);
+      line-height: 1.7;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+
+    .hero,
+    .section {
+      background: var(--panel);
+      border: 1px solid rgba(215, 199, 167, 0.7);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -80px auto;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(15, 118, 110, 0.18), transparent 68%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--soft-2);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 12px;
+      line-height: 1.2;
+    }
+
+    h1 {
+      margin-top: 18px;
+      font-size: 42px;
+    }
+
+    h2 {
+      font-size: 28px;
+      color: #17324d;
+    }
+
+    h3 {
+      font-size: 20px;
+      color: #274c77;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+
+    .hero-grid,
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.5fr 1fr;
+      margin-top: 24px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .section {
+      margin-top: 22px;
+      padding: 28px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #eadfca;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .card strong {
+      color: var(--ink);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: #8a3b12;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid #eadfca;
+      background: #fffdfa;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #efe4d0;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #fff2d8;
+      color: #7c2d12;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    code {
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: #edf7f6;
+      color: #0f766e;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      border-radius: 18px;
+      background: #1f2933;
+      color: #f8fafc;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .node {
+      min-width: 144px;
+      flex: 1 1 144px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid #d9e9e6;
+      background: var(--soft-2);
+    }
+
+    .node.local {
+      background: var(--soft-3);
+      border-color: #cfe0f5;
+    }
+
+    .node.merge {
+      background: #fff7e7;
+      border-color: #eed6a0;
+    }
+
+    .arrow {
+      color: #9a6b19;
+      font-weight: 700;
+    }
+
+    .callout {
+      border-left: 5px solid var(--accent-2);
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #fff3ea;
+      color: #7c3a1d;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .summary-box {
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.09), rgba(35, 78, 112, 0.08));
+      border: 1px solid rgba(35, 78, 112, 0.18);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .page {
+        padding: 20px 14px 44px;
+      }
+
+      .hero,
+      .section {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">go-union 每日模块讲解</span>
+      <h1>`build_context/graph` DAG 上下文构建框架</h1>
+      <p>
+        这一套代码解决的不是“广告怎么选”，而是“在调用广告引擎之前，怎样把一个请求需要的上下文又快又稳地补齐”。
+        它把许多可并发的上下文计算拆成节点，用 DAG 统一调度，既能并发跑，又能在超时或失败时做降级恢复。
+      </p>
+      <div class="chips">
+        <span class="chip">关键词：DAG 调度</span>
+        <span class="chip">关键词：BuildFlowContext</span>
+        <span class="chip">关键词：Fallback 降级</span>
+        <span class="chip">关键词：依赖触发</span>
+      </div>
+
+      <div class="hero-grid">
+        <div class="card">
+          <h3>一句话作用</h3>
+          <p>
+            它像一个“并发装配车间”：先跑必须顺序执行的本地步骤，再并发跑异步节点；谁依赖谁，就等前置完成后再触发；
+            如果节点报错或超时，框架会尝试走 <code>Fallback</code>，尽量把请求补成“可继续”的状态。
+          </p>
+        </div>
+        <div class="card">
+          <h3>它在业务里的位置</h3>
+          <p>
+            上游已经完成协议解析和代码位校验，下游马上要请求广告引擎。
+            这时 <code>BuildFlowContext</code> 会调用 DAG，把设备、地域、实验、广告位、搜索信息等上下文补齐。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>1. 模块作用</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>为什么需要它</h3>
+          <p>构建 <code>FlowContext</code> 的步骤很多，而且有些可以并发，有些必须等待前置结果。手写 goroutine 很容易失控，DAG 可以把依赖关系写清楚。</p>
+        </div>
+        <div class="card">
+          <h3>它负责什么</h3>
+          <p>负责“调度”。也就是节点怎么组织、什么时候能开始、超时后怎么补救、结果何时回写到 <code>FlowContext</code>。</p>
+        </div>
+        <div class="card">
+          <h3>它不负责什么</h3>
+          <p>它不直接决定业务规则。具体的“算什么字段”“查什么配置”是在节点自己的 <code>Run</code> 和 <code>ParseResult</code> 里完成。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. 关键文件</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>文件</th>
+              <th>角色</th>
+              <th>学习时关注什么</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>v2/adfetch/build_context/build_context.go</code></td>
+              <td>业务入口</td>
+              <td>看 <code>BuildFlowContext</code> 怎样调用 DAG，以及 ADN 和 DSP 的超时分别是多少。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/build_context/graph/interface.go</code></td>
+              <td>核心接口</td>
+              <td>区分 <code>Node</code> 和 <code>LocalNode</code>；理解为什么异步节点禁止直接写 <code>FlowContext</code>。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/build_context/graph/dag.go</code></td>
+              <td>构图 + 调度主逻辑</td>
+              <td>重点看 <code>NewBuilder</code>、<code>Run</code>、<code>tryPrepareChildNodes</code>、<code>parseAsyncNodeResult</code>、<code>tryRecoveryTimeoutDag</code>。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/build_context/graph/dag_plan_debug.go</code></td>
+              <td>调试输出</td>
+              <td>看节点时间线如何打印，理解日志里的 <code>S/F/T/H</code> 分别代表什么。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/build_context/graph/dag_test.go</code></td>
+              <td>基础测试</td>
+              <td>看重名节点、panic、可恢复与不可恢复节点的行为。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/build_context/build_context.go</code></td>
+              <td>真实接入点</td>
+              <td>看 <code>NewAdnContextGraph</code>、<code>NewDspContextGraph</code> 和 <code>RewriteFlowContext</code> 如何把 DAG 产物回填业务对象。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. 核心流程</h2>
+      <p>把这套框架想成“先建施工图，再按依赖开工，最后把结果回填总对象”。</p>
+      <div class="flow">
+        <div class="flow-row">
+          <div class="node local"><strong>1. First Level LocalNode</strong><br />先做顺序执行的初始化步骤</div>
+          <div class="arrow">→</div>
+          <div class="node merge"><strong>2. firstLevelMergeNode</strong><br />把第一层收口</div>
+          <div class="arrow">→</div>
+          <div class="node"><strong>3. Async Node</strong><br />并发查数据、算字段</div>
+        </div>
+        <div class="flow-row">
+          <div class="node"><strong>4. ParseResult</strong><br />在调度线程统一回写结果</div>
+          <div class="arrow">→</div>
+          <div class="node local"><strong>5. Child Node Ready</strong><br />依赖全部完成后继续触发</div>
+          <div class="arrow">→</div>
+          <div class="node merge"><strong>6. Final LocalNode</strong><br />最后做收尾或汇总</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 18px;">
+        <div class="card">
+          <h3>构图阶段</h3>
+          <ul>
+            <li><code>NewBuilder</code> 会先造一个虚拟 <code>header</code> 节点和一个 <code>firstLevelMergeNode</code>。</li>
+            <li><code>AddFirstLevelNode</code> 加的是第一层本地节点，按加入顺序运行。</li>
+            <li><code>AddNode</code> 加的是异步节点，可以声明依赖的父节点。</li>
+            <li><code>AddLocalNode</code> 加的是同步节点，适合轻量计算或最后的整合动作。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>运行阶段</h3>
+          <ul>
+            <li><code>Run</code> 先执行第一层本地节点。</li>
+            <li>当某个节点完成后，<code>tryPrepareChildNodes</code> 会把所有孩子节点的依赖计数减一。</li>
+            <li>某个孩子的 <code>parentNodeLeftCount</code> 变成 0，说明它的依赖已满足，可以开始。</li>
+            <li>异步节点完成后，不会自己写入 <code>FlowContext</code>，而是交给调度线程调用 <code>ParseResult</code>。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 18px;">
+        最关键的设计点：异步节点的 <code>Run</code> 不能直接改 <code>FlowContext</code>。框架故意把“并发执行”和“结果回填”拆开，避免多个 goroutine 同时写共享对象，降低可见性和竞态问题。
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4. 重要结构体与函数</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>名字</th>
+              <th>看法</th>
+              <th>要点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Node</code></td>
+              <td>异步工作单元</td>
+              <td>有 <code>Run</code>、<code>Fallback</code>、<code>ParseResult</code>、<code>IsRecoverable</code>。适合耗时操作，比如查配置、查画像、远程取数。</td>
+            </tr>
+            <tr>
+              <td><code>LocalNode</code></td>
+              <td>同步工作单元</td>
+              <td>直接在调度线程执行，可以写 <code>FlowContext</code>，适合初始化、轻量加工、最后汇总。</td>
+            </tr>
+            <tr>
+              <td><code>DAGBuilderImpl</code></td>
+              <td>施工图设计师</td>
+              <td>负责把“节点”和“依赖关系”组装成内部图结构。</td>
+            </tr>
+            <tr>
+              <td><code>RunnableNode</code></td>
+              <td>运行时节点快照</td>
+              <td>除了原始节点信息，还记录开始时间、结束时间、剩余依赖数、状态等。</td>
+            </tr>
+            <tr>
+              <td><code>RunningPlan</code></td>
+              <td>一次请求的调度现场</td>
+              <td>里面有 ready 队列、结果通道、剩余节点数、最后错误、是否超时。</td>
+            </tr>
+            <tr>
+              <td><code>runNode</code></td>
+              <td>统一入口</td>
+              <td>本地节点走同步执行；异步节点走 goroutine；超时恢复模式下则直接走 <code>Fallback</code>。</td>
+            </tr>
+            <tr>
+              <td><code>parseAsyncNodeResult</code></td>
+              <td>异步收口点</td>
+              <td>如果 <code>Run</code> 返回错误且节点可恢复，会先试 <code>Fallback</code>，然后再 <code>ParseResult</code>。</td>
+            </tr>
+            <tr>
+              <td><code>tryRecoveryTimeoutDag</code></td>
+              <td>超时补救逻辑</td>
+              <td>对未完成的异步节点尝试降级；如果还能继续，就继续触发后续节点；不行则整体失败。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. 一个具体例子</h2>
+      <p>用 <code>dag_test.go</code> 里的超时恢复思路来理解，最直观。</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>场景</h3>
+          <p>
+            第一层先跑 <code>fist_1</code>、<code>fist_2</code>。然后一个本地节点 <code>adLocal_1_1</code> 完成后，触发多个异步节点：
+            <code>async_1_1</code>、<code>async_1_2</code>、<code>async_1_3</code>。其中有节点会故意睡很久，制造超时。
+          </p>
+        </div>
+        <div class="card">
+          <h3>结果</h3>
+          <p>
+            如果这些慢节点是可恢复的，框架会在超时后走 <code>Fallback</code>，把必须的默认值补上，然后继续触发依赖它们的后续节点。
+            所以最终返回可能是 <code>timeout = true</code> 但 <code>err = nil</code>。
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px;">
+        <pre>BuildFlowContext
+  -> first local init
+  -> async node A 正常返回
+  -> async node B 超时
+  -> DAG 进入 recovery 模式
+  -> 对 B 调用 Fallback
+  -> ParseResult 把降级结果写回 FlowContext
+  -> 依赖 B 的后续节点继续执行
+  -> 请求继续往 engine 走</pre>
+      </div>
+
+      <p style="margin-top: 16px;">
+        这就是它的业务价值：不是所有超时都等于“整条链路必须失败”。有些上下文字段允许降级，系统就还能继续给广告引擎一个“够用的上下文”。
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>6. 容易混淆的点</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>混淆点 1：<code>Run</code> 和 <code>ParseResult</code></h3>
+          <p>
+            很多人第一次看会问：既然 <code>Run</code> 都算完了，为什么还要 <code>ParseResult</code>？
+            答案是为了把“并发执行”与“共享对象写入”分开，统一在调度线程回写，减少并发写风险。
+          </p>
+        </div>
+        <div class="card">
+          <h3>混淆点 2：为什么还有 <code>LocalNode</code></h3>
+          <p>
+            不是所有节点都值得起 goroutine。很轻的步骤、顺序敏感步骤、最后整合步骤，直接本地跑更简单、更省调度成本。
+          </p>
+        </div>
+        <div class="card">
+          <h3>混淆点 3：<code>timeout=true</code> 但不一定失败</h3>
+          <p>
+            这是这套设计最反直觉的一点。超时表示“真实运行里发生过超时”，但如果所有必要节点都能恢复成功，整体仍可继续。
+          </p>
+        </div>
+        <div class="card">
+          <h3>混淆点 4：<code>merge node</code> 不是业务节点</h3>
+          <p>
+            它只是结构辅助点，用来简化“后续节点默认依赖前面一批节点”的表达。它本身不做业务逻辑。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. 学习小结</h2>
+      <div class="summary-box">
+        <p>
+          如果把 <code>build_context</code> 看成“给广告请求补齐档案”，那 <code>graph</code> 就是这套档案装配流水线的调度器。
+          它最值得学习的地方有三点：
+        </p>
+        <ul>
+          <li>用 DAG 显式表达依赖，而不是把顺序和并发写死在代码流程里。</li>
+          <li>把异步执行和结果回填拆开，降低并发写共享对象的复杂度。</li>
+          <li>把超时视为“可恢复的中间状态”而不是“绝对失败”，让广告请求在有限降级下继续向前走。</li>
+        </ul>
+        <p style="margin-top: 14px;">
+          下一次如果继续深挖，最自然的延伸是：去看真实的 DAG 节点到底在补哪些上下文字段，以及 ADN 和 DSP 两条图在节点组成上有什么差异。
+        </p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

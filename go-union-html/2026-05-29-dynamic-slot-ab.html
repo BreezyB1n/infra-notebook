@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>go-union 模块讲解：dynamic_slot_ab</title>
+  <style>
+    :root {
+      --bg: #f6f1e8;
+      --paper: #fffdf8;
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --line: #e7dcc9;
+      --brand: #a64b2a;
+      --brand-soft: #f6dfd2;
+      --accent: #1f6b5d;
+      --accent-soft: #dceee8;
+      --warn: #8a5a00;
+      --warn-soft: #fff1cc;
+      --shadow: 0 18px 40px rgba(88, 60, 27, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #fbe9d8 0, transparent 28%),
+        linear-gradient(180deg, #f8f3eb 0%, #f3ede2 100%);
+      line-height: 1.7;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto 48px;
+    }
+
+    .hero, .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 36px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(166, 75, 42, 0.16), rgba(166, 75, 42, 0));
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 14px;
+      line-height: 1.25;
+    }
+
+    h1 { font-size: 38px; margin-top: 18px; }
+    h2 { font-size: 26px; }
+    h3 { font-size: 19px; }
+
+    p { margin: 0 0 12px; color: var(--muted); }
+
+    .hero-grid, .grid-2 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.45fr 0.95fr;
+      margin-top: 24px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 22px;
+    }
+
+    .mini-panel {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: #fff8ef;
+      border: 1px solid #f0dfc7;
+    }
+
+    .mini-panel strong {
+      color: var(--ink);
+    }
+
+    .section {
+      margin-top: 24px;
+      padding: 28px 30px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-title .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px var(--accent-soft);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 14px 16px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #fbf4e8;
+      color: var(--ink);
+      width: 20%;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Menlo, monospace;
+      font-size: 0.92em;
+      background: #f4eee5;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: #7a351a;
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .flow-step {
+      position: relative;
+      padding: 16px 18px 16px 54px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fffdf9, #fff7ed);
+    }
+
+    .flow-step::before {
+      content: attr(data-step);
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .callout {
+      border-left: 5px solid var(--brand);
+      background: #fff4ec;
+      padding: 16px 18px;
+      border-radius: 14px;
+      color: var(--ink);
+    }
+
+    .warn {
+      border-left-color: var(--warn);
+      background: var(--warn-soft);
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .compare .box {
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffdfa;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #7a746a;
+    }
+
+    @media (max-width: 860px) {
+      .hero, .section { padding: 24px 20px; }
+      .hero-grid, .grid-2, .compare { grid-template-columns: 1fr; }
+      h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">go-union 每日模块讲解 · 2026-05-29</span>
+      <h1><code>dynamic_slot_ab</code>：一次“动态广告位分流”查询是怎么设计出来的？</h1>
+      <p>这个模块的职责不是直接返回广告，而是回答另一个更前置的问题：<strong>当前这个用户、这个 code group，最终应该命中哪个 rit，以及它对应什么广告位类型</strong>。你可以把它理解成“投放前的分流咨询台”。</p>
+      <p>它很适合学习 go-union 的组件化写法，因为这里把请求解析、AB 选择、结果包装、事件日志拆成了几个清楚的小角色。虽然主入口当前还没接完整逻辑，但模块轮廓已经非常标准。</p>
+
+      <div class="hero-grid">
+        <div class="mini-panel">
+          <h3>一句话先理解</h3>
+          <p><strong>输入</strong>：一个加密的动态分流请求，里面带 <code>code_group_id</code>、设备信息、App 信息。</p>
+          <p><strong>中间要做的事</strong>：解密请求、找出用户身份、根据 code group 和 AB 信息挑 rit、查出广告位类型、记录日志。</p>
+          <p><strong>输出</strong>：一个加密响应，告诉调用方这次应该用哪个 <code>rit</code> 和什么 <code>ad_slot_type</code>。</p>
+        </div>
+        <div class="mini-panel">
+          <h3>今天重点学什么</h3>
+          <div class="chip-list">
+            <span class="chip">Builder 组装服务</span>
+            <span class="chip">Protocol Mapper</span>
+            <span class="chip">AB 容错兜底</span>
+            <span class="chip">埋点字段设计</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-title">
+        <span class="dot"></span>
+        <h2>1. 模块作用</h2>
+      </div>
+      <p>动态广告位场景里，一个 <code>code_group_id</code> 往往不是单个固定广告位，而是一组候选 <code>rit</code>。服务要结合用户身份和 AB 分流结果，从这组候选里选出一个“本次该走的 rit”。</p>
+      <div class="callout">
+        它解决的不是“广告内容选什么”，而是“广告位先落到哪条支路上”。这是更靠前的一次路由决策。
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-title">
+        <span class="dot"></span>
+        <h2>2. 关键文件</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>文件</th>
+            <th>角色</th>
+            <th>你读它时要关注什么</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>view/dynamic_slot_ab.go</code></td>
+            <td>入口层</td>
+            <td>看 service 是怎么被初始化的。它把 mapper、getter、logger 像积木一样拼起来。</td>
+          </tr>
+          <tr>
+            <td><code>v2/dynamic_slot_ab/dynamic_slot_ab.go</code></td>
+            <td>服务骨架</td>
+            <td>重点看 <code>DynamicSlotAbServiceBuilder</code>。真正的主流程还没补完，但依赖边界已经划清。</td>
+          </tr>
+          <tr>
+            <td><code>.../protocol_mapping/dynamic_protocol_mapping.go</code></td>
+            <td>协议映射层</td>
+            <td>输入请求怎么读 body、解密、校验、转成内部结构；输出结果怎么重新加密。</td>
+          </tr>
+          <tr>
+            <td><code>.../ab_info_get/ab_info_get.go</code></td>
+            <td>AB 分流决策层</td>
+            <td>怎么调用 <code>tester.GetAbRitInfo</code>，以及失败时怎样回退到默认 rit。</td>
+          </tr>
+          <tr>
+            <td><code>.../event_log/event_log.go</code></td>
+            <td>日志层</td>
+            <td>看它把请求、上下文、结果、错误一次性打成完整事件，便于排查线上问题。</td>
+          </tr>
+          <tr>
+            <td><code>.../entity/*.go</code></td>
+            <td>领域对象</td>
+            <td>看请求、上下文、结果是怎样一层层“包起来”的。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card section">
+      <div class="section-title">
+        <span class="dot"></span>
+        <h2>3. 核心流程</h2>
+      </div>
+      <div class="flow">
+        <div class="flow-step" data-step="1">
+          <strong>入口初始化 service</strong>
+          <p><code>createDynamicSlotAbService</code> 用 Builder 注入三个核心组件：<code>protocolMapper</code>、<code>abInfoGetter</code>、<code>eventLogger</code>。</p>
+        </div>
+        <div class="flow-step" data-step="2">
+          <strong>把外部协议转成内部请求</strong>
+          <p><code>MappingToDynamicRequest</code> 读取 HTTP body，解密 <code>message</code>，再反序列化成 <code>DynamicRequest</code>。</p>
+        </div>
+        <div class="flow-step" data-step="3">
+          <strong>补齐动态上下文</strong>
+          <p>虽然当前文件里还没把这段流程真正写进 <code>GetDynamicSlotInfo</code>，但从 <code>DynamicContext</code> 结构能看出设计意图：把用户信息、全局 did、code group 信息都补进去。</p>
+        </div>
+        <div class="flow-step" data-step="4">
+          <strong>根据 AB 信息挑 rit</strong>
+          <p><code>GetDynamicAbRitInfo</code> 调 <code>tester.GetAbRitInfo</code>。如果拿到非法 rit、空 rit、或者 rit 不在候选 <code>CodeIds</code> 里，就回落到 <code>DefaultCodeId</code>。</p>
+        </div>
+        <div class="flow-step" data-step="5">
+          <strong>查询广告位类型</strong>
+          <p>代码会用最终 rit 去查 <code>shm.GetSiteCodeInfoById</code>，再把站点配置转成 <code>AdSlotType</code>。这一步让“rit 选择结果”变成“客户端可消费的广告位信息”。</p>
+        </div>
+        <div class="flow-step" data-step="6">
+          <strong>返回加密响应并记录事件</strong>
+          <p><code>MappingOutResult</code> 生成 <code>{rit, ad_slot_type, dynamic_slot_ab_extra}</code>，优先加密返回；<code>DynamicEvent</code> 则把全过程打到 message bus。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-title">
+        <span class="dot"></span>
+        <h2>4. 重要结构体 / 函数</h2>
+      </div>
+      <div class="grid-2">
+        <div class="mini-panel">
+          <h3><code>DynamicRequest</code></h3>
+          <p>外部请求的核心载体。至少要有 <code>code_group_id</code>、<code>device.os</code>、<code>device.applog_did</code>、<code>app.appid</code>。</p>
+          <p>这里的 <code>binding:"required"</code> 很关键，说明协议层在第一步就会拦掉缺字段请求。</p>
+        </div>
+        <div class="mini-panel">
+          <h3><code>DynamicContext</code></h3>
+          <p>是“解析后的请求”再加上“用户维度信息”和“code group 配置”的合体对象。</p>
+          <p>你可以把它理解成：<strong>请求原文 + 路由所需上下文</strong>。</p>
+        </div>
+        <div class="mini-panel">
+          <h3><code>GetDynamicAbRitInfo</code></h3>
+          <p>模块里最像“业务决策”的函数。它不相信外部结果，始终会做两层兜底：</p>
+          <ul>
+            <li>取不到 AB rit，就回默认 rit。</li>
+            <li>取到了，但不合法或不在候选集合里，还是回默认 rit。</li>
+          </ul>
+        </div>
+        <div class="mini-panel">
+          <h3><code>MappingOutResult</code></h3>
+          <p>把内部结果转回客户端协议。这里能看到 go-union 的一个常见习惯：<strong>优先返回加密消息，失败时再退化到明文</strong>，保证服务尽量可用。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-title">
+        <span class="dot"></span>
+        <h2>5. 一个具体例子</h2>
+      </div>
+      <p>测试代码里有一组很适合拿来理解的例子：</p>
+      <table>
+        <tbody>
+          <tr>
+            <th>请求里的 code group</th>
+            <td><code>1234</code></td>
+          </tr>
+          <tr>
+            <th>候选 CodeIds</th>
+            <td><code>[22345, 22356, 22367]</code></td>
+          </tr>
+          <tr>
+            <th>默认 DefaultCodeId</th>
+            <td><code>22345</code></td>
+          </tr>
+          <tr>
+            <th>tester 返回 rit</th>
+            <td>如果返回 <code>"aabbcc"</code> 或 <code>"22349"</code> 这种非法值 / 越界值，服务都会丢弃。</td>
+          </tr>
+          <tr>
+            <th>最终 rit</th>
+            <td>回退成默认值 <code>22345</code></td>
+          </tr>
+          <tr>
+            <th>最终 ad_slot_type</th>
+            <td>根据站点配置映射成如 <code>BANNER</code> 这样的广告位类型。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top:16px;">
+        这段逻辑很像“老师分班”：先看推荐分班结果，如果推荐结果无效，还是回原始默认班级，不能把学生分到一个不存在的班里。
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-title">
+        <span class="dot"></span>
+        <h2>6. 容易混淆的点</h2>
+      </div>
+      <div class="compare">
+        <div class="box">
+          <h3>混淆点 1：它是不是广告召回接口？</h3>
+          <p>不是。它不负责选广告素材，也不跑完整 engine/pack。它主要负责<strong>动态广告位分流</strong>，产出的是 <code>rit</code> 和广告位类型。</p>
+        </div>
+        <div class="box">
+          <h3>混淆点 2：AB 结果是不是直接信任？</h3>
+          <p>也不是。<code>GetDynamicAbRitInfo</code> 会再次验证 rit 是否是数字、是否在候选集合、是否能查到站点配置。它对坏数据是保守的。</p>
+        </div>
+        <div class="box">
+          <h3>混淆点 3：入口为什么现在只返回 <code>not support</code>？</h3>
+          <p>因为主流程还没在 <code>GetDynamicSlotInfo</code> 里接起来。今天更适合把它当成“骨架阅读题”：看清它想怎么组织依赖、怎么分层，而不是把它误看成完整成品。</p>
+        </div>
+        <div class="box">
+          <h3>混淆点 4：为什么日志这么重？</h3>
+          <p>这种分流接口出了问题，排查时最怕“只知道失败，不知道失败前用户命中了什么上下文”。所以日志把请求、解密内容、用户信息、最终 rit、错误码都带上了。</p>
+        </div>
+      </div>
+      <div class="callout warn" style="margin-top:16px;">
+        阅读这类模块时，不要只盯入口函数是否“能跑通”。很多时候最有学习价值的，是它已经露出来的分层边界和容错思路。
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-title">
+        <span class="dot"></span>
+        <h2>7. 学习小结</h2>
+      </div>
+      <p><code>dynamic_slot_ab</code> 是一个很典型的 go-union 小型服务骨架：</p>
+      <ul>
+        <li>入口层只负责接线，不写重业务。</li>
+        <li>协议层负责“外部格式 ↔ 内部对象”的转换。</li>
+        <li>业务层负责做 rit 选择和容错。</li>
+        <li>日志层保证线上问题可回放、可追踪。</li>
+      </ul>
+      <p style="margin-top:12px;">如果你是第一次读 go-union，今天最值得带走的不是某个字段名，而是这套思路：<strong>先把职责拆薄，再用 Builder 把它们拼起来</strong>。后面读 <code>adfetch</code>、<code>pack</code>、<code>dsp_v2_get_ads</code> 时，你会反复看到这个模式。</p>
+      <p class="footer-note">讲解依据：`view/dynamic_slot_ab.go`、`v2/dynamic_slot_ab/*.go` 及其测试文件。特别注意：当前主入口尚未实现完整业务逻辑，本文重点是帮助理解模块设计和预期链路。</p>
+    </section>
+  </main>
+</body>
+</html>
