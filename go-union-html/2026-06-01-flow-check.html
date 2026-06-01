@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>go-union Flow Check 学习页</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: rgba(255, 251, 245, 0.94);
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --line: #d9c8b4;
+      --accent: #0b6e4f;
+      --accent-2: #b45309;
+      --accent-3: #1d4ed8;
+      --soft: #fff3dd;
+      --soft-2: #e9f8f1;
+      --soft-3: #eaf2ff;
+      --danger: #fff0ec;
+      --shadow: 0 18px 44px rgba(75, 56, 33, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(11, 110, 79, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(180, 83, 9, 0.12), transparent 24%),
+        linear-gradient(180deg, #f8f4ee 0%, #f1e7d8 100%);
+      line-height: 1.72;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 22px 72px;
+    }
+
+    .hero, .section {
+      background: var(--panel);
+      border: 1px solid rgba(217, 200, 180, 0.8);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -36px;
+      bottom: -68px;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(29, 78, 216, 0.14), transparent 68%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--soft-2);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    h1, h2, h3 { margin: 0 0 12px; line-height: 1.2; }
+    h1 { margin-top: 18px; font-size: 42px; }
+    h2 { font-size: 28px; color: #17324d; }
+    h3 { font-size: 19px; color: #274c77; }
+    p { margin: 0 0 14px; color: var(--muted); }
+
+    .hero-grid, .grid-2, .grid-3 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.45fr 1fr;
+      margin-top: 24px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .section {
+      margin-top: 22px;
+      padding: 28px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #eadfce;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .card strong { color: var(--ink); }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: #92400e;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid #eadfce;
+      background: #fffdfa;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #efe4d5;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #fff1d9;
+      color: #7c2d12;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    code {
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: #edf7f6;
+      color: #0f766e;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      border-radius: 18px;
+      background: #1f2937;
+      color: #f8fafc;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.62;
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .flow-box {
+      flex: 1 1 180px;
+      min-width: 180px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid #dccbb8;
+      background: #fff;
+    }
+
+    .flow-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #1e3a5f;
+    }
+
+    .arrow {
+      color: var(--accent-2);
+      font-weight: 800;
+      font-size: 20px;
+      padding: 0 4px;
+    }
+
+    .note, .warn, .tip {
+      border-radius: 18px;
+      padding: 16px 18px;
+      border: 1px solid transparent;
+    }
+
+    .note {
+      background: var(--soft-3);
+      border-color: #cbdcfb;
+    }
+
+    .warn {
+      background: var(--danger);
+      border-color: #f5c2b8;
+    }
+
+    .tip {
+      background: var(--soft-2);
+      border-color: #bde4d4;
+    }
+
+    .mini {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    li { margin-bottom: 8px; }
+
+    @media (max-width: 900px) {
+      .hero-grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      h1 { font-size: 34px; }
+      .page { padding: 24px 16px 56px; }
+      .section, .hero { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">go-union 每日模块拆解</span>
+      <h1>Flow Check：广告请求进入主流程前的“安检口”</h1>
+      <p>
+        如果把 <code>v2/adfetch</code> 想成一条广告请求装配线，那么 <code>flow_check</code> 就是正式开工前的安检口。
+        它不负责召回广告，也不负责拼结果；它专门回答一个更基础的问题：
+        <strong>这个请求到底有没有资格继续往下走？</strong>
+      </p>
+      <p>
+        今天这页重点看 <code>v2/adfetch/flow_check</code>。它位于 <code>protocol_mapping</code> 之后、
+        <code>build_flow_context</code> 之前，负责把“原始请求”升级成“带配置、带规则上下文的请求”，并在必要时尽早拦截。
+      </p>
+
+      <div class="hero-grid">
+        <div class="card">
+          <h3>一句话理解</h3>
+          <p><strong>protocol_mapping</strong> 负责“把请求翻译成系统能读懂的格式”，而 <strong>flow_check</strong> 负责“确认这个格式化后的请求是否合法、可投、值得继续”。</p>
+          <div class="chips">
+            <span class="chip">早失败</span>
+            <span class="chip">统一拦截口</span>
+            <span class="chip">按接入方式分流</span>
+            <span class="chip">补齐 app / rit 配置</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>你会学到什么</h3>
+          <ul>
+            <li>为什么系统要在主流程前做一次集中校验</li>
+            <li>SDK 请求和 DSP 请求为什么不能共用同一套 checker</li>
+            <li><code>BidRequestWithRitInfo</code> 为什么是后续链路的关键中间形态</li>
+            <li>真实请求是怎么在这里被放行、修正或拦截的</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>1. 模块作用</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>作用 1：做前置安检</h3>
+          <p>先检查 <code>app_id</code>、<code>rit</code>、广告位大小、包名、广告数量、SDK 版本、签名、动态布局等基础条件，避免坏请求继续污染后面流程。</p>
+        </div>
+        <div class="card">
+          <h3>作用 2：补齐配置上下文</h3>
+          <p>它会先通过配置服务查出 <code>ritConfig</code> 和 <code>appConfig</code>，再组装成 <code>BidRequestWithRitInfo</code>，让后续模块不必反复查配置。</p>
+        </div>
+        <div class="card">
+          <h3>作用 3：按入口选规则</h3>
+          <p>SDK、DSP、M2S 社群、开放注册等流量规则不一样，所以这里会分出不同 checker 列表，而不是把所有规则揉成一锅。</p>
+        </div>
+      </div>
+      <div class="note" style="margin-top:18px;">
+        <strong>最值得记住的一点：</strong>
+        <code>flow_check</code> 不是简单的 <code>if ... else</code> 大杂烩，它更像“统一校验框架 + 多组可组合 checker”。
+        这就是它适合教学的地方。
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. 关键文件</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>文件</th>
+              <th>角色</th>
+              <th>看点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>v2/adfetch/ad_fetch.go</code></td>
+              <td>真实调用入口</td>
+              <td>主链路里先做 <code>protocol_mapping</code>，再做 <code>flow_check</code>，之后才会进入 <code>light_drop</code> 和 <code>build_flow_context</code>。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/flow_check/flow_check.go</code></td>
+              <td>框架骨架</td>
+              <td>定义 SDK / DSP 两类 <code>FlowCheck</code> 构造方式，串起“补配置 + 逐个 checker 执行 + 错误打点”。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/flow_check/checker_interface.go</code></td>
+              <td>统一接口</td>
+              <td><code>AtomicChecker</code> 和 <code>FunctionalChecker</code> 把校验逻辑抽成统一积木。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/flow_check/base_check.go</code></td>
+              <td>通用规则</td>
+              <td>校验 sourceType、server bidding、一些 app / slot / 包名 / ad_count 基础条件。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/flow_check/sdk_check.go</code></td>
+              <td>SDK 专属规则</td>
+              <td>低版本拦截、动态布局、签名校验、开放注册、预览合法性等都在这里。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/flow_check/dsp_check.go</code></td>
+              <td>DSP 专属规则</td>
+              <td>只关心 DSP 世界里的 adx、平台、广告位数量和尺寸等约束。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/flow_check/media_config.go</code></td>
+              <td>配置读取层</td>
+              <td>从 shm / site config 取出 <code>ritConfig</code> 和 <code>appConfig</code>，是“请求绑定配置”的入口。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/entity/bid_request_with_rit_info.go</code></td>
+              <td>中间形态</td>
+              <td>把原请求包一层，挂上 rit / app 配置，并顺手做一些初始化与重写。</td>
+            </tr>
+            <tr>
+              <td><code>v2/adfetch/flow_check/sdk_check_test.go</code></td>
+              <td>案例支撑</td>
+              <td>比如动态布局校验的测试，能帮助理解规则不是拍脑袋写的。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. 核心流程</h2>
+      <p>先看主链路中的位置，再看包内部怎么做。</p>
+      <div class="flow">
+        <div class="flow-row">
+          <div class="flow-box">
+            <strong>步骤 1</strong>
+            <span><code>protocol_mapping</code></span>
+            <p class="mini">把 HTTP / PB / 路由差异翻译成统一请求对象。</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <strong>步骤 2</strong>
+            <span><code>flow_check</code></span>
+            <p class="mini">查配置、补 rit / app 上下文、跑一串 checker。</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <strong>步骤 3</strong>
+            <span><code>light_drop</code></span>
+            <p class="mini">在更完整的请求基础上做轻量降级。</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flow-box">
+            <strong>步骤 4</strong>
+            <span><code>build_flow_context</code></span>
+            <p class="mini">真正为召回 / 排序 / 打包准备大上下文。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:18px;">
+        <div class="card">
+          <h3>包内主流程</h3>
+          <ol class="mini" style="padding-left:20px; margin:0;">
+            <li>检查明显错误，比如 <code>app_id</code>、<code>rit</code> 是否为空。</li>
+            <li>用 <code>ModisConfigService</code> 查出 <code>ritConfig</code> 和 <code>appConfig</code>。</li>
+            <li>调用 <code>entity.NewBidRequestWithRitInfo(...)</code> 生成增强版请求。</li>
+            <li>遍历 <code>checkerList</code>，逐个执行 <code>checker.Check()</code>。</li>
+            <li>一旦某个 checker 返回 error，就停止继续执行，并打错误 metrics。</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>为什么这一步很省钱</h3>
+          <p>因为很多请求如果到了 <code>engine</code>、<code>pack</code>、<code>send</code> 才发现不合法，前面已经浪费了一大堆计算和依赖调用。把错误尽量提前挡住，本质上是在保护后面的高成本模块。</p>
+        </div>
+      </div>
+
+      <pre style="margin-top:18px;"><code>ad_fetch.go 主链路（抽象理解）
+protocol_mapping
+  -> flow_check
+    -> 用 rit/app 配置构造 BidRequestWithRitInfo
+    -> 依次跑 base checker / sdk checker / dsp checker
+    -> 有错就提前返回
+  -> light_drop
+  -> build_flow_context
+  -> engine
+  -> pack
+  -> send</code></pre>
+    </section>
+
+    <section class="section">
+      <h2>4. 重要结构体 / 函数</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3><code>FlowCheck</code></h3>
+          <p>SDK 主校验器。内部持有 <code>checkerList</code> 和 <code>appConfigService</code>。它的价值不在“自己做了多少规则”，而在“把校验流程标准化”。</p>
+        </div>
+        <div class="card">
+          <h3><code>DspFlowCheck</code></h3>
+          <p>DSP 的独立版本。你可以把它理解成“同一个框架骨架，但换了一套更适合 DSP 场景的 checker 集”。</p>
+        </div>
+        <div class="card">
+          <h3><code>AtomicChecker</code></h3>
+          <p>最核心的抽象。每个 checker 都只关心一件事：<strong>给定一个增强后的请求，我要不要拦它？</strong></p>
+        </div>
+        <div class="card">
+          <h3><code>NewFunctionalChecker</code></h3>
+          <p>把一个函数包装成 checker，降低新增规则的门槛。很多规则就是靠这个工厂函数快速拼起来的。</p>
+        </div>
+        <div class="card">
+          <h3><code>NewBaseChecker()</code></h3>
+          <p>返回一组通用 checker，比如 sourceType、server bidding、app 状态、广告位信息、包名和 ad_count 校验。</p>
+        </div>
+        <div class="card">
+          <h3><code>NewSdkCheckerList()</code></h3>
+          <p>返回 SDK 专属规则清单，包括低版本拦截、动态布局、签名、开放注册、预览合法性等，更贴近客户端接入现实。</p>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:18px;">
+        <table>
+          <thead>
+            <tr>
+              <th>函数 / 结构</th>
+              <th>你该怎么记</th>
+              <th>典型职责</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>entity.NewBidRequestWithRitInfo</code></td>
+              <td>“原始请求升级器”</td>
+              <td>把请求和 app / rit 配置绑在一起，并初始化一些后续链路会依赖的字段。</td>
+            </tr>
+            <tr>
+              <td><code>ModisConfigService.GetRitConfig</code></td>
+              <td>“查广告位配置”</td>
+              <td>从 shm 取到 rit 对应的站点位配置。</td>
+            </tr>
+            <tr>
+              <td><code>ModisConfigService.GetAppConfig</code></td>
+              <td>“查媒体配置”</td>
+              <td>从 relation site / media / site config 拼出 app 侧配置对象。</td>
+            </tr>
+            <tr>
+              <td><code>NewPackageNameChecker</code></td>
+              <td>“请求包名和平台包名对不对得上”</td>
+              <td>支持单包、模糊匹配、多包、白名单豁免等分支。</td>
+            </tr>
+            <tr>
+              <td><code>NewDynamicChecker</code></td>
+              <td>“动态布局别乱来”</td>
+              <td>会结合 SDK 版本、render_method、国际化环境、代码位样式等多条件判断是否放行。</td>
+            </tr>
+            <tr>
+              <td><code>M2SCommunitySignCheck</code></td>
+              <td>“社群请求先验签”</td>
+              <td>检查 sign、nonce、timestamp，并按约定算法重算签名。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. 一个具体例子</h2>
+      <p>下面拿一个最典型、也最容易代入的例子：<strong>SDK 的 get_ads 请求进入 flow_check 后，到底经历了什么？</strong></p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>输入状态</h3>
+          <ul>
+            <li><code>protocol_mapping</code> 已经把原始请求转成 <code>BidRequestWithProtocolHeader</code></li>
+            <li>请求里有 <code>app_id</code>、<code>rit</code>、<code>adslots</code>、<code>ad_sdk_version</code></li>
+            <li>这时它还没有绑定平台配置，也还没跑各种合法性规则</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>flow_check 内部动作</h3>
+          <ul>
+            <li>先确认 <code>app_id</code> 和 <code>rit</code> 不是空的</li>
+            <li>读取 <code>ritConfig</code> 和 <code>appConfig</code></li>
+            <li>组装成 <code>BidRequestWithRitInfo</code></li>
+            <li>先跑 base checker，再跑 sdk checker</li>
+            <li>如果有任何一条命中拦截，就立刻返回 error</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px;">
+        <h3>例子：动态布局请求被拦截</h3>
+        <p>
+          假设某个请求命中了动态布局代码位，但客户端 SDK 版本过低，或者 <code>render_method</code> 和代码位实际样式不匹配。
+          这时 <code>NewDynamicChecker</code> 会结合样式配置、版本号、请求类型和环境做判断，返回
+          <code>UnionDynamicPlanBlock</code> 之类的错误。
+        </p>
+        <p>
+          从业务角度看，这相当于在说：
+          <strong>“不是没有广告，而是你这次请求的展示能力和代码位要求对不上。”</strong>
+        </p>
+      </div>
+
+      <pre style="margin-top:18px;"><code>你可以把这个例子脑补成：
+
+客户端请求来了
+  -> 代码位是动态布局
+  -> 但 SDK 版本太低 / render_method 填错
+  -> flow_check 提前挡住
+  -> 后面的 engine / pack 根本不需要再浪费时间</code></pre>
+
+      <div class="tip" style="margin-top:18px;">
+        <strong>测试侧证据：</strong>
+        <code>sdk_check_test.go</code> 里就有围绕 <code>NewDynamicChecker</code> 的测试，
+        例如“直播内流 render method 校验跳过”这类场景，说明这些规则已经被当成独立行为在验证，而不是散落在大流程里碰运气。
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6. 容易混淆的点</h2>
+      <div class="grid-2">
+        <div class="warn">
+          <h3>混淆点 1：flow_check 不是 protocol_mapping</h3>
+          <p><strong>protocol_mapping</strong> 解决“怎么读懂请求”，<strong>flow_check</strong> 解决“读懂之后让不让过”。前者偏协议翻译，后者偏业务合法性。</p>
+        </div>
+        <div class="warn">
+          <h3>混淆点 2：它不只是校验，还会补上下文</h3>
+          <p>很多人以为这里只是 return error。其实它还做了关键的配置绑定，把请求升级成 <code>BidRequestWithRitInfo</code>，后面很多模块都吃这个对象。</p>
+        </div>
+        <div class="warn">
+          <h3>混淆点 3：SDK 和 DSP 不是同一套规则</h3>
+          <p>DSP 只看 DSP 世界里的约束；SDK 还要面对客户端版本、包名、签名、开放注册等问题。两边虽然都叫 flow_check，但关注点不一样。</p>
+        </div>
+        <div class="warn">
+          <h3>混淆点 4：checker 返回 nil 不代表“什么都没发生”</h3>
+          <p>有些 checker 会顺手打 metrics、修正 app_id、改请求字段，甚至触发一些初始化逻辑。它不报错，不等于它没有副作用。</p>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:18px;">
+        <strong>再补一个很常见的误区：</strong>
+        看到 <code>NewSdkFunctionalChecker</code> 这个名字，容易以为“它只是命名不同”。
+        其实它是真的在包装层判断 <code>accessMethod</code>，避免非 SDK 请求误跑 SDK 规则。
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. 学习小结</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>从工程角度看</h3>
+          <p><code>flow_check</code> 的价值，是把“前置校验”做成一个独立、可组合、可扩展的模块，而不是把校验散落到主流程各处。</p>
+        </div>
+        <div class="card">
+          <h3>从业务角度看</h3>
+          <p>它在尽量早的阶段挡掉无效请求，既保护后面的高成本链路，也让错误码和拦截原因更容易被统一观测。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px;">
+        <h3>今天你至少要带走 3 句话</h3>
+        <ul>
+          <li><code>flow_check</code> 是 <code>v2/adfetch</code> 主链路里的“前置安检口”。</li>
+          <li>它的核心产物不是只有 error，还有 <code>BidRequestWithRitInfo</code> 这个增强后的请求对象。</li>
+          <li>它最漂亮的设计点，是把规则拆成一组组 checker，让 SDK / DSP / 特殊场景能各走各的校验路线。</li>
+        </ul>
+      </div>
+
+      <div class="tip" style="margin-top:18px;">
+        <strong>如果你明天继续学：</strong>
+        最自然的下一站是 <code>v2/adfetch/protocol_mapping/sdk</code> 或 <code>v2/adfetch/context_drop</code>。
+        前者能接上“请求是怎么被翻译出来的”，后者能接上“为什么过了 flow_check 以后还会被进一步降级 / 拦截”。
+      </div>
+    </section>
+  </main>
+</body>
+</html>
