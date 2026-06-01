@@ -30,9 +30,9 @@
   - `v2/adfetch/entity/bid_request_with_rit_info.go`
   - `v2/adfetch/flow_check/sdk_check_test.go`
 - Run summary: wrote a standalone HTML lesson explaining `flow_check` as the pre-engine admission gate, covering config binding, checker composition, SDK vs DSP rule separation, and a concrete dynamic-layout block example. Recorded at 2026-06-01 09:47:36 CST.
-- Publish summary: synced automation files into `/Users/bytedance/dev/infra/infra-notebook/go-union-html/`; pending git commit and push details.
+- Publish summary: synced automation files into `/Users/bytedance/dev/infra/infra-notebook/go-union-html/`, committed only that directory on `main`, and pushed commit `303c849` to `origin/main`.
 - Next topic hints:
   - `v2/adfetch/protocol_mapping/sdk` for the step right before `flow_check`
   - `v2/adfetch/context_drop` for the next "why was the request still stopped" layer
   - `v2/adfetch/request_log` for how this stage gets observed afterward
-- Current run note: created the HTML lesson, refreshed automation memory, and synced the lesson files into `infra-notebook`. Runtime so far: about 00:09 before git publish.
+- Publish runtime: ~00:05
