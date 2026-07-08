@@ -1,0 +1,16 @@
+rl/ppo_train.py
+  h_3fb3e5b0b28fa8 7,96,250-687,689-734,736-772
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e5a4f513bae6cb6a1c8261316c13538ee64084cb",
+  "prompts": {},
+  "humans": {
+    "h_3fb3e5b0b28fa8": {
+      "author": "zhangbin.327 <zhangbin.327@bytedance.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
